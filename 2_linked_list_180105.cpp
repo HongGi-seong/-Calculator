@@ -92,14 +92,18 @@ int CurrentTopData ( Stack *topOfStack ) {
 }
 
 
-
-int is_operator ( int a ) {
-	return ( a == '+' || a == '-' || a == '*' || a == '/' ) ;
+// This function is used to check whether the current value is an operator or not
+// If the operator, returns 1
+// Use the current value as a parameter.
+int WhetherOperator ( int value ) 
+{
+	return ( value == '+' || value == '-' || value == '*' || value == '/' ) ;
 }
 
 
 
-int prec_operator ( int a ) {
+int prec_operator ( int a ) 
+{
 	if ( a == '(' ) return 0 ;
 	else if ( a == '+' || a == '-' ) return 1 ;
 	else if ( a == '*' || a == '/' ) return 2 ;
@@ -122,7 +126,7 @@ void infix_to_postfix ( char *src, char *dst, Stack *top_of_stack ) {
 			}	
 			Pop ( top_of_stack ) ;
 			src++ ;
-		} else if ( is_operator ( *src ) ) {
+		} else if ( WhetherOperator ( *src ) ) {
 			while ( !CheckStackEmpty ( top_of_stack ) && prec_operator ( CurrentTopData ( top_of_stack ) ) >= prec_operator ( *src ) ) {
 				*dst++ = Pop ( top_of_stack ) ;
 				*dst++ = ' ' ;
