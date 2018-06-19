@@ -42,7 +42,8 @@ int CheckStackEmpty ( Stack *topOfStack  )
 // There is no return value
 // The parameter is the top node of the stack
 // The parameter ( value ) is used as the data to be stored in the stack.
-void Push ( Stack *topOfStack, int value ) {									 
+void Push ( Stack *topOfStack, int value )
+{									 
 	Node *newNode = ( Node * ) malloc ( sizeof ( Node ) ) ;					
 	
 	newNode -> data = value ;													
@@ -52,36 +53,42 @@ void Push ( Stack *topOfStack, int value ) {
 }
 
 
-
-int pop ( Stack *top_of_stack ) {
-	Node *curr ;																// Node 형 포인터 변수 curr 선언 
+// This function is used to pop data from the stack
+// Returns the top stack value
+// The parameter is the top node of the stack
+int Pop ( Stack *topOfStack ) 
+{
+	Node *currNode ;																
 	int result ;												
 	
-	if ( CheckStackEmpty ( top_of_stack ) ) {									// 스택이 비었는지 검사 
+	if ( CheckStackEmpty ( topOfStack ) ) {									
 		printf ( "stack is empty" ) ;
 		system ( "PAUSE" ) ;
 	}	
 	
-	curr = top_of_stack -> top ;												// curr의 주소를 스택 최상단 노드의 주소로 설정 
-	result = curr -> data ;														// 스택 최상단 노드의 데이터 값을 result에 저장 
+	currNode = topOfStack -> top ;												
+	result = currNode -> data ;														 
 	
-	top_of_stack -> top = curr -> next ;										// 스택 최상단 노드의 주소를 최상단 다음 노드로 지정 
+	// Specify the address of the top node as the address of the next node
+	topOfStack -> top = currNode -> next ;										 
 
-	free ( curr ) ;																// 최상단 노드에 할당된 메모리를 해제한다. 
+	free ( currNode ) ;																
 	
-	return result ;
-	
+	return result ;	
 }
 
 
-int current_top_data ( Stack *top_of_stack ) {
+// This function is used to determine what the value of the top node is
+// Returns the value of the top node
+// The parameter is the top node of the stack
+int CurrentTopData ( Stack *topOfStack ) {
 
-	if ( CheckStackEmpty ( top_of_stack ) ) {
+	if ( CheckStackEmpty ( topOfStack ) ) {
 		printf ( "stack is empty" ) ;
 		system ( "PAUSE" ) ;	
 	}
 	
-	return top_of_stack -> top -> data ;										// 최상단 노드의 데이터 값을 반환한다 
+	return topOfStack -> top -> data ;										
 }
 
 
@@ -109,15 +116,15 @@ void infix_to_postfix ( char *src, char *dst, Stack *top_of_stack ) {
 			Push ( top_of_stack, *src ) ;
 			src++ ;
 		} else if ( *src == ')' ) {
-			while ( current_top_data ( top_of_stack ) != '(' ) {
-				*dst++ = pop ( top_of_stack ) ;
+			while ( CurrentTopData ( top_of_stack ) != '(' ) {
+				*dst++ = Pop ( top_of_stack ) ;
 				*dst++ = ' ' ;
 			}	
-			pop ( top_of_stack ) ;
+			Pop ( top_of_stack ) ;
 			src++ ;
 		} else if ( is_operator ( *src ) ) {
-			while ( !CheckStackEmpty ( top_of_stack ) && prec_operator ( current_top_data ( top_of_stack ) ) >= prec_operator ( *src ) ) {
-				*dst++ = pop ( top_of_stack ) ;
+			while ( !CheckStackEmpty ( top_of_stack ) && prec_operator ( CurrentTopData ( top_of_stack ) ) >= prec_operator ( *src ) ) {
+				*dst++ = Pop ( top_of_stack ) ;
 				*dst++ = ' ' ;
 			}
 			Push ( top_of_stack, *src ) ;
@@ -131,7 +138,7 @@ void infix_to_postfix ( char *src, char *dst, Stack *top_of_stack ) {
 	}
 	
 	while ( !CheckStackEmpty ( top_of_stack ) ) {
-		*dst++ = pop ( top_of_stack ) ;
+		*dst++ = Pop ( top_of_stack ) ;
 		*dst++ = ' ' ;
 	}
 	dst--;
@@ -155,22 +162,22 @@ int calc ( char *dst, Stack *top_of_stack ) {
 			} while ( *dst >= '0' && *dst <= '9' ) ;
 			Push ( top_of_stack, a ) ;
 		} else if ( *dst == '+' ) {
-			Push ( top_of_stack, pop ( top_of_stack ) + pop ( top_of_stack ) ) ;
+			Push ( top_of_stack, Pop ( top_of_stack ) + Pop ( top_of_stack ) ) ;
 			dst++ ;
 		} else if ( *dst == '*' ) {
-			Push ( top_of_stack, pop ( top_of_stack ) * pop ( top_of_stack ) ) ;
+			Push ( top_of_stack, Pop ( top_of_stack ) * Pop ( top_of_stack ) ) ;
 			dst++ ;
 		} else if ( *dst == '-' ) {
-			a = pop ( top_of_stack ) ;
-			Push ( top_of_stack, pop ( top_of_stack ) - a ) ;
+			a = Pop ( top_of_stack ) ;
+			Push ( top_of_stack, Pop ( top_of_stack ) - a ) ;
 			dst++ ;
 		} else if ( *dst == '/' ) {
-			a = pop ( top_of_stack ) ;
-			Push ( top_of_stack, pop ( top_of_stack ) / a ) ;
+			a = Pop ( top_of_stack ) ;
+			Push ( top_of_stack, Pop ( top_of_stack ) / a ) ;
 			dst++ ;
 		} else dst++;
 	}
-	return pop ( top_of_stack ) ;	
+	return Pop ( top_of_stack ) ;	
 }
 
 
