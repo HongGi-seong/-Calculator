@@ -113,91 +113,131 @@ int OperatorPriority ( int value )
 }
 
 
-
-void infix_to_postfix ( char *src, char *dst, Stack *top_of_stack ) {
-	InitTopAddr( top_of_stack ) ;
+// This function is used to convert the infix to postfix
+// There is no return value
+// Use the input expression as an infix parameter
+// Use output parameters as postfix
+// The parameter is the top node of the stack
+void InfixToPostfix ( char *infix, char *postfix, Stack *topOfStack ) 
+{
+	InitTopAddr( topOfStack ) ;
 	
-	while ( *src ) {
-		if ( *src == '(' ) {
-			Push ( top_of_stack, *src ) ;
-			src++ ;
-		} else if ( *src == ')' ) {
-			while ( CurrentTopData ( top_of_stack ) != '(' ) {
-				*dst++ = Pop ( top_of_stack ) ;
-				*dst++ = ' ' ;
-			}	
-			Pop ( top_of_stack ) ;
-			src++ ;
-		} else if ( WhetherOperator ( *src ) ) {
-			while ( !CheckStackEmpty ( top_of_stack ) && OperatorPriority ( CurrentTopData ( top_of_stack ) ) >= OperatorPriority ( *src ) ) {
-				*dst++ = Pop ( top_of_stack ) ;
-				*dst++ = ' ' ;
+	while ( *infix ) {
+		
+		if ( *infix == '(' ) {
+			Push ( topOfStack, *infix ) ;
+			infix++ ;
+		} 
+		
+		else if ( *infix == ')' ) {
+			// Repeat until you meet '(', which you have accumulated on the stack
+			while ( CurrentTopData ( topOfStack ) != '(' ) {
+				*postfix++ = Pop ( topOfStack ) ;
+				*postfix++ = ' ' ;
 			}
-			Push ( top_of_stack, *src ) ;
-			*src++ ;
-		} else if ( *src >= '0' && *src <= '9' ) {
+			// Discard '('
+			Pop ( topOfStack ) ;
+			infix++ ;
+		} 
+		
+		else if ( WhetherOperator ( *infix ) ) {
+			// Until the operator in the infix is ??less than the operator in the stack
+			while ( !CheckStackEmpty ( topOfStack ) 
+					&& ( OperatorPriority ( CurrentTopData ( topOfStack ) ) >= OperatorPriority ( *infix ) ) ) {
+						
+				*postfix++ = Pop ( topOfStack ) ;
+				*postfix++ = ' ' ;
+			}
+			Push ( topOfStack, *infix ) ;
+			*infix++ ;
+		} 
+		
+		else if ( *infix >= '0' && *infix <= '9' ) {
 			do {
-				*dst++ = *src++ ;	
-			} while ( *src >= '0' && *src <= '9' );
-			*dst++ = ' ';
-		} else src ++ ;	
+				*postfix++ = *infix++ ;	
+			} while ( *infix >= '0' && *infix <= '9' );
+			*postfix++ = ' ';
+		} else infix ++ ;	
 	}
 	
-	while ( !CheckStackEmpty ( top_of_stack ) ) {
-		*dst++ = Pop ( top_of_stack ) ;
-		*dst++ = ' ' ;
+	// Pop any remaining values ??on the stack
+	while ( !CheckStackEmpty ( topOfStack ) ) {
+		*postfix++ = Pop ( topOfStack ) ;
+		*postfix++ = ' ' ;
 	}
-	dst--;
-	*dst = 0;
+	
+	postfix--;
+	// Tells the end of the postfix
+	*postfix = 0;
+}
+
+
+// This function is used for postfix calculation
+// Return calculation result
+// Use the expression converted to postfix as a parameter
+// The parameter is the top node of the stack
+int Calc ( char *postfix, Stack *topOfStack )
+{
+	int tmp ;
+	
+	InitTopAddr( topOfStack ) ;
+	
+	while ( *postfix ) {
+		if ( *postfix >= '0' && *postfix <= '9' ) {
+			tmp = 0 ;
+			do {
+				// Converting a character type number to an int type number
+				tmp = tmp * 10 + *postfix - '0' ;
+				postfix++ ;	
+			} while ( *postfix >= '0' && *postfix <= '9' ) ;
+			Push ( topOfStack, tmp ) ;
+		} 
+		
+		else if ( *postfix == '+' ) {
+			Push ( topOfStack, Pop ( topOfStack ) + Pop ( topOfStack ) ) ;
+			postfix++ ;
+		} 
+		
+		else if ( *postfix == '*' ) {
+			Push ( topOfStack, Pop ( topOfStack ) * Pop ( topOfStack ) ) ;
+			postfix++ ;
+		} 
+		
+		else if ( *postfix == '-' ) {
+			tmp = Pop ( topOfStack ) ;
+			Push ( topOfStack, Pop ( topOfStack ) - tmp ) ;
+			postfix++ ;
+		}
+
+		else if ( *postfix == '/' ) {
+			tmp = Pop ( topOfStack ) ;
+			Push ( topOfStack, Pop ( topOfStack ) / tmp ) ;
+			postfix++ ;
+		} 
+		
+		else postfix++;
+	}
+	return Pop ( topOfStack ) ;	
 }
 
 
 
-
-int calc ( char *dst, Stack *top_of_stack ) {
-	int a ;
+int main ( void ) 
+{
+	int result; 
+	Stack linkedListStack;
+	char inputInfix[100] , outputPostfix[100] ;
 	
-	InitTopAddr( top_of_stack ) ;
+	printf ( "\nPlease enter an infix expression\n" ) ;
 	
-	while ( *dst ) {
-		if ( *dst >= '0' && *dst <= '9' ) {
-			a = 0 ;
-			do {
-				a = a * 10 + *dst - '0' ;
-				dst++ ;	
-			} while ( *dst >= '0' && *dst <= '9' ) ;
-			Push ( top_of_stack, a ) ;
-		} else if ( *dst == '+' ) {
-			Push ( top_of_stack, Pop ( top_of_stack ) + Pop ( top_of_stack ) ) ;
-			dst++ ;
-		} else if ( *dst == '*' ) {
-			Push ( top_of_stack, Pop ( top_of_stack ) * Pop ( top_of_stack ) ) ;
-			dst++ ;
-		} else if ( *dst == '-' ) {
-			a = Pop ( top_of_stack ) ;
-			Push ( top_of_stack, Pop ( top_of_stack ) - a ) ;
-			dst++ ;
-		} else if ( *dst == '/' ) {
-			a = Pop ( top_of_stack ) ;
-			Push ( top_of_stack, Pop ( top_of_stack ) / a ) ;
-			dst++ ;
-		} else dst++;
-	}
-	return Pop ( top_of_stack ) ;	
-}
-
-
-
-int main ( void ) {
-	int a, result; 
-	Stack pstack;
-	char exp[100] , postfix[100] ;
+	scanf ( "\n%s", inputInfix ) ;
 	
-	printf ( "\n식을 입력하세요.\n" ) ;
-	scanf ( "\n%s", exp ) ;
-	infix_to_postfix ( exp, postfix, &pstack ) ;
-	printf ( "\nconver to postfix = %s", postfix ) ;
-	result = calc ( postfix, &pstack ) ;
+	InfixToPostfix ( inputInfix, outputPostfix, &linkedListStack ) ;
+	
+	printf ( "\nconver to postfix = %s", outputPostfix ) ;
+	
+	result = Calc ( outputPostfix, &linkedListStack ) ;
+	
 	printf ( "\nanswer is %d\n", result ) ;
 	
 	system ( "PAUSE" ) ; 
