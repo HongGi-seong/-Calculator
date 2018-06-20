@@ -81,7 +81,8 @@ int Pop ( Stack *topOfStack )
 // This function is used to determine what the value of the top node is
 // Returns the value of the top node
 // The parameter is the top node of the stack
-int CurrentTopData ( Stack *topOfStack ) {
+int CurrentTopData ( Stack *topOfStack ) 
+{
 
 	if ( CheckStackEmpty ( topOfStack ) ) {
 		printf ( "stack is empty" ) ;
